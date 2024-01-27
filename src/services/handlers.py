@@ -56,10 +56,9 @@ async def process_about(message: Message):
 
 @bot.message_handler(commands=['ask'])
 async def process_ask(message: Message):
-    '''Handles ask command.'''
+    '''Handles ask command. Starts conversation with chatGPT. '''
     try:
         msg = CMD_MESSAGE['on_ask']
-        # ошибка при await
         await bot.set_state(
             message.from_user.id,
             GPTHistory.talk_mode
@@ -190,8 +189,6 @@ async def process_msg_without_state(message: Message):
             message.chat.id,
             text=ERROR_MESSAGE['no_talk_state']
         )
-        state = await bot.get_state(message.from_user.id, message.chat.id)
-        print(state)
     except AttributeError as err:
         logger.error(f'AttrError on restart {err}', exc_info=True)
     except Exception as err:
