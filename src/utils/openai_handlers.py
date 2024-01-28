@@ -13,13 +13,17 @@ async def send_msg_to_gpt(new: str, prev: str | None, username: str) -> str:
     '''
     try:
         logger.info('Sending msg to gpt...')
+        message_with_context = [
+            {'role': 'user', 'content': prev, 'name': username},
+            {'role': 'user', 'content': new, 'name': username}
+        ]
+        message_without_context = [
+            {'role': 'user', 'content': new, 'name': username}
+        ]
         response = await gpt_client.chat.completions.create(
-            messages=[
-                {'role': 'user', 'content': prev, 'name': username},
-                {'role': 'user', 'content': new, 'name': username}
-            ],
+            messages=message_with_context if prev else message_without_context,
             model='gpt-4',
-            temperature=5
+            temperature=0
         )
         return response.choices[0].message.content
     except Exception as err:
