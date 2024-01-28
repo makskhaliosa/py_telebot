@@ -4,7 +4,7 @@ from telebot.types import Message
 
 from ..config import bot
 from ..lexicon.lexicon import CMD_MESSAGE, ERROR_MESSAGE
-from ..utils.openai_handlers import send_msg_to_gpt
+from ..utils.openai_handlers import handle_msg_exchange
 from ..utils.states import GPTHistory
 
 logger = logging.getLogger(__name__)
@@ -159,16 +159,16 @@ async def process_msg_to_gpt(message: Message):
         async with bot.retrieve_data(user_id, chat_id) as data:
             prev_msg = data.get('prev_msg')
             data['prev_msg'] = msg
-        gpt_response = await send_msg_to_gpt(
+        response_text = await handle_msg_exchange(
             new=msg,
             prev=prev_msg,
-            username=message.from_user.username
+            username=message.from_user.username,
+            chat_id=chat_id,
+            bot=bot
         )
-        if gpt_response is not None:
-            logger.info('Got response from gpt.')
-            await bot.send_message(chat_id, text=gpt_response)
+        if response_text:
             async with bot.retrieve_data(user_id, chat_id) as data:
-                data['prev_msg'] = gpt_response
+                data['prev_msg'] = response_text
         else:
             await bot.send_message(
                 chat_id, text=ERROR_MESSAGE['on_gpt_error']
